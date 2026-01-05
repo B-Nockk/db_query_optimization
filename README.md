@@ -1,12 +1,48 @@
 # 🚀 SQL Query Optimization: From 8s to 80ms
 
+## Table of Contents
+
+- [Overview](#overview)
+- [The Problem](#the-problem)
+- [The Solution](#the-solution)
+- [Tech Stack](#tech-stack)
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Setup](#setup)
+  - [Run Optimizations](#run-optimizations)
+- [Optimization Strategies](#optimization-strategies)
+  - [B-Tree Indexing](#1-b-tree-indexing)
+  - [Partial Indexing](#2-partial-indexing)
+  - [Composite Indexing](#3-composite-indexing)
+  - [Redis Caching (Cache-Aside Pattern)](#4-redis-caching-cache-aside-pattern)
+  - [Connection Pooling](#5-connection-pooling)
+  - [Query Analysis (EXPLAIN ANALYZE)](#6-query-analysis-explain-analyze)
+- [Anti-Patterns Demonstrated](#anti-patterns-demonstrated)
+  - [The "Terrible" Endpoint](#the-terrible-endpoint)
+- [Performance Metrics](#performance-metrics)
+  - [Baseline vs. Optimized](#baseline-vs-optimized)
+  - [Load Test Results](#load-test-results)
+- [Observability](#observability)
+  - [Structured Logging](#structured-logging)
+  - [Metrics Endpoint](#metrics-endpoint)
+- [Testing](#testing)
+  - [Unit Tests](#unit-tests)
+  - [Load Tests](#load-tests)
+- [Documentation](#documentation)
+- [Key Learnings](#key-learnings)
+- [Next Steps](#next-steps)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Overview
+
 > A hands-on demonstration of backend performance optimization using PostgreSQL, Redis, and indexing strategies on 10 million records.
 
-## 🎯 The Problem
+## The Problem
 
 How do you query 10 million user records without bringing your database to its knees?
 
-## 💡 The Solution
+## The Solution
 
 Multiple optimization strategies, measured and compared with real metrics.
 
@@ -18,7 +54,7 @@ Multiple optimization strategies, measured and compared with real metrics.
 | Composite Index       | ~95ms   | 84x faster  | Multi-column queries |
 | Redis Cache           | ~12ms   | 666x faster | Hot data paths       |
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Database**: PostgreSQL 15
 - **Cache**: Redis 7
@@ -27,7 +63,7 @@ Multiple optimization strategies, measured and compared with real metrics.
 - **Observability**: Structured logging, metrics endpoint
 - **Testing**: pytest, locust (load testing)
 
-## 🏃 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -77,7 +113,7 @@ curl http://localhost:3000/users/cached?email=user5000000@example.com
 curl http://localhost:3000/users/terrible?limit=10
 ```
 
-## 📊 Optimization Strategies
+## Optimization Strategies
 
 ### 1. **B-Tree Indexing**
 
@@ -192,7 +228,7 @@ See [`docs/ExperimentLog.md`](docs/ExperimentLog.md) for full query plans.
 
 ---
 
-## 🔴 Anti-Patterns Demonstrated
+## Anti-Patterns Demonstrated
 
 ### The "Terrible" Endpoint
 
@@ -225,7 +261,7 @@ async def get_users_terrible(limit: int = 10):
 
 ---
 
-## 📈 Performance Metrics
+## Performance Metrics
 
 ### Baseline vs. Optimized
 
@@ -259,7 +295,7 @@ See [`docs/ExperimentLog.md`](docs/ExperimentLog.md) for detailed metrics.
 
 ---
 
-## 🔍 Observability
+## Observability
 
 ### Structured Logging
 
@@ -298,7 +334,7 @@ cache_hit_rate 94.2
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ### Unit Tests
 
@@ -331,7 +367,7 @@ Simulates:
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 - **[Architecture.md](docs/Architecture.md)**: System design, data flow, component interaction
 - **[ExperimentLog.md](docs/ExperimentLog.md)**: Query timings, EXPLAIN ANALYZE outputs, observations
@@ -339,7 +375,7 @@ Simulates:
 
 ---
 
-## 🎓 Key Learnings
+## Key Learnings
 
 1. **Indexes aren't free**: They speed up reads but slow down writes (~15% in this case)
 2. **Right tool for the job**: B-Tree for exact matches, partial for filtered queries, cache for hot data
@@ -350,7 +386,7 @@ Simulates:
 
 ---
 
-## 🚀 Next Steps
+## Next Steps
 
 Potential enhancements:
 
@@ -362,13 +398,13 @@ Potential enhancements:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 This is a learning project, but suggestions are welcome! Open an issue or PR.
 
 ---
 
-## 📄 License
+## License
 
 MIT License - feel free to use for learning or portfolio purposes.
 
