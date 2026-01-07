@@ -1,14 +1,15 @@
 # public/main.py
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from datetime import datetime
 from pydantic import BaseModel, Field
-from typing import Union, Annotated
+from dotenv import load_dotenv
 import os
 
-app_title = os.getenv("APP_TITLE") or "DBO"
-app_version = os.getenv("APP_VERSION") or "0.1.0"
+load_dotenv()
+app_title = os.getenv("APP_TITLE")
+app_version = os.getenv("APP_VERSION")
 
-app = FastAPI(title=app_title or "DB0")
+app = FastAPI(title=app_title or "App title missing")
 
 
 class HealthCheckResponse(BaseModel):
@@ -24,23 +25,42 @@ class ErrorResponse(BaseModel):
 
 @app.get(
     "/health",
-    response_model=Union[HealthCheckResponse, ErrorResponse],
+    response_model=HealthCheckResponse,
     responses={
         200: {"description": "System is healthy", "model": HealthCheckResponse},
         503: {"description": "System is unhealthy", "model": ErrorResponse},
+        500: {"description": "Unexpected server error", "model": ErrorResponse},
     },
 )
-def check_health() -> Annotated[Union[HealthCheckResponse, ErrorResponse], "API response"]:
+def check_health() -> HealthCheckResponse:
     try:
         if not app_version:
-            return ErrorResponse(
+            err = ErrorResponse(
                 error="version not found",
                 timestamp=datetime.now(),
             )
 
-        return HealthCheckResponse(status="Healthy", timestamp=datetime.now(), version=app_version)
+            raise HTTPException(
+                status_code=503,
+                detail=err.model_dump(mode="json"),
+            )
+
+        return HealthCheckResponse(
+            status="Healthy",
+            timestamp=datetime.now(),
+            version=app_version,
+        )
+
+    except HTTPException:
+        raise
+
     except Exception as e:
-        return ErrorResponse(
+        err = ErrorResponse(
             error=f"Unexpected error: {str(e)}",
             timestamp=datetime.now(),
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail=err.model_dump(mode="json"),
         )
