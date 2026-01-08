@@ -3,21 +3,40 @@ from fastapi import FastAPI, HTTPException
 from datetime import datetime
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
-import os
-from common.logger import logger
+from common.config import initialize_config, get_config, is_configured
+from common.logger import get_app_logger
+from common.api_error import ConfigurationError
+
 
 load_dotenv()
+try:
+    initialize_config()
+except ConfigurationError as e:
+    # Can't use logger yet, but that's OK - this is a fatal startup error
+    print(f"FATAL: Configuration error:\n{e}")
+    import sys
 
-app_title = os.getenv("APP_TITLE")
-app_version = os.getenv("APP_VERSION")
+    sys.exit(1)
 
-app = FastAPI(title=app_title or "App title missing")
+config = get_config()
+logger = get_app_logger(__name__)
+
+app_title = config.app_title
+app_version = config.app_version
+
+app = FastAPI(
+    title=app_title,
+    version=app_version,
+    description=f"Running in {config.environment} environment",
+)
 
 
 class HealthCheckResponse(BaseModel):
     status: str = Field(..., description="Current system health status")
     timestamp: datetime = Field(..., description="Server time in ISO 8601 format")
     version: str = Field(..., description="Application version")
+    logging_configured: bool = Field(..., description="Logging configuration status")
+    log_level: str = Field(..., description="Application log level")
 
 
 class ErrorResponse(BaseModel):
@@ -52,6 +71,8 @@ def check_health() -> HealthCheckResponse:
             status="Healthy",
             timestamp=datetime.now(),
             version=app_version,
+            logging_configured=is_configured(),
+            log_level=get_config().logging.level_value,
         )
     except HTTPException:
         raise
@@ -66,3 +87,15 @@ def check_health() -> HealthCheckResponse:
             status_code=500,
             detail=err.model_dump(mode="json"),
         )
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8080,
+        reload=config.environment != "production",
+        log_level=config.logging.level_value.lower(),
+    )
