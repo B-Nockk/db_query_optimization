@@ -9,13 +9,6 @@ Example:
     LOG_BACKENDS=file,datadog
 """
 
-from .base import LogBackend
-from .file_backend import FileBackend
-from .registry import get_active_backends, register_backend
-
-__all__ = [
-    "LogBackend",
-    "FileBackend",
-    "get_active_backends",
-    "register_backend",
-]
+from .base import *
+from .file_backend import *
+from .registry import *

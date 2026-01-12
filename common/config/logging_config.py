@@ -5,7 +5,7 @@ from .config_types import EnvLogLevel, EnvLogBackends
 from common.api_error import ConfigurationError
 
 _default_log_level_env_key = "LOG_LEVEL"
-_default_log_backend_env_key = "LOG_BACKEND"
+_default_log_backend_env_key = "LOG_BACKENDS"
 
 
 @dataclass(frozen=True)
