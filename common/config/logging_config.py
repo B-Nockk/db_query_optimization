@@ -34,7 +34,8 @@ def load_logging_config(
     Load logging configuration from environment.
 
     Args:
-        env_key: Environment variable name
+        log_level_env_key: Environment variable name
+        log_backend_env_key: Environment variable name
 
     Returns:
         LoggingConfig instance
@@ -44,7 +45,7 @@ def load_logging_config(
     """
     try:
         log_level_val = require_env(log_level_env_key).upper()
-        log_backend_val = require_env(log_backend_env_key).upper()
+        log_backend_val = require_env(log_backend_env_key).lower()
 
         return LoggingConfig(
             log_level=EnvLogLevel(log_level_val),
