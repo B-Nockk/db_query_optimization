@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from common.config import initialize_config, get_config, is_configured
 from common.logger import get_app_logger
-from common.logger.logger_middleware import RequestLoggingMiddleware
 from common.api_error import ConfigurationError
 from typing import Any
 
@@ -34,7 +33,6 @@ app = FastAPI(
     version=app_version,
     description=f"Running in {config.environment} environment",
 )
-app.add_middleware(RequestLoggingMiddleware)
 
 
 class HealthCheckResponse(BaseModel):
