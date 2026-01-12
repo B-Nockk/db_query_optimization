@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from common.config import initialize_config, get_config, is_configured
 from common.logger import get_app_logger
 from common.api_error import ConfigurationError
-
+from typing import Any
 
 load_dotenv()
 try:
@@ -19,7 +19,11 @@ except ConfigurationError as e:
     sys.exit(1)
 
 config = get_config()
-logger = get_app_logger(__name__)
+logger = get_app_logger(
+    name=__name__,
+    track_timing=True,
+    persist=True,
+)
 
 app_title = config.app_title
 app_version = config.app_version
@@ -87,6 +91,19 @@ def check_health() -> HealthCheckResponse:
             status_code=500,
             detail=err.model_dump(mode="json"),
         )
+
+
+@app.get("/metrics")
+async def metrics() -> dict[str, Any]:
+    """Get logging performance metrics."""
+    from common.logger.persistence import get_persistence_metrics
+    from common.logger.log_backends import get_all_metrics
+
+    return {
+        "logger": logger.get_timing_stats(),
+        "persistence": get_persistence_metrics(),
+        "backends": get_all_metrics(),
+    }
 
 
 if __name__ == "__main__":
