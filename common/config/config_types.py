@@ -4,6 +4,15 @@ from enum import Enum
 import logging
 
 
+class EnvBool(str, Enum):
+    TRUE = "true"
+    FALSE = "false"
+
+    def __str__(self) -> str:
+        """Return string value for easy printing."""
+        return self.value
+
+
 class EnvLogLevel(str, Enum):
     """
     Supported log levels.
@@ -47,11 +56,11 @@ class EnvLogBackends(str, Enum):
         return self.value
 
 
-class EnvMetrics(str, Enum):
-    METRICS_ENABLED = "metrics_enabled"
+class EnvMetricBackend(str, Enum):
+    PROMETHEUS = "prometheus"
+    DATADOG = "datadog"
 
     def __str__(self) -> str:
-        """Return string value for easy printing."""
         return self.value
 
 
@@ -71,4 +80,10 @@ class Environment(str, Enum):
         return self.value
 
 
-__all__ = ["EnvLogLevel", "Environment", "EnvLogBackends"]
+__all__ = [
+    "EnvBool",
+    "EnvLogLevel",
+    "Environment",
+    "EnvLogBackends",
+    "EnvMetricBackend",
+]
