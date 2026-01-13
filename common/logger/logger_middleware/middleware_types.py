@@ -15,12 +15,13 @@ class RequestMetadata(BaseModel):
     method: str = Field(..., description="HTTP method (GET, POST, etc.)")
     path: str = Field(..., description="Request path without query params")
     status_code: int = Field(..., ge=100, le=599, description="HTTP status code")
-    duration_ms: float = Field(..., ge=0, description="Request duration in milliseconds")
+    duration_ms: float = Field(
+        ..., ge=0, description="Request duration in milliseconds"
+    )
 
     model_config = {"frozen": True}
 
     @computed_field
-    @property
     def duration_seconds(self) -> float:
         """Duration in seconds for easier reading."""
         return round(self.duration_ms / 1000, 3)
@@ -41,7 +42,9 @@ class RequestDetails(BaseModel):
     request_id: Optional[str] = Field(None, description="Unique request ID")
 
     # Response info
-    content_length: Optional[int] = Field(None, ge=0, description="Response size in bytes")
+    content_length: Optional[int] = Field(
+        None, ge=0, description="Response size in bytes"
+    )
 
     # Timing breakdown (for advanced profiling)
     time_to_first_byte: Optional[float] = Field(None, ge=0, description="TTFB in ms")
@@ -63,13 +66,11 @@ class RequestLogEntry(BaseModel):
     model_config = {"frozen": True}
 
     @computed_field
-    @property
     def is_slow(self) -> bool:
         """Flag slow requests (>1 second)."""
         return self.metadata.duration_ms > 1000
 
     @computed_field
-    @property
     def is_error(self) -> bool:
         """Flag error responses (5xx)."""
         return self.metadata.status_code >= 500

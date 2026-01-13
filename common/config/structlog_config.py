@@ -25,14 +25,20 @@ class _StructlogState:
     _instance: Optional["_StructlogState"] = None
     _lock = threading.Lock()
 
-    def __new__(cls):
+    # Declare instance attributes with their types
+    _initialized: bool
+    _log_level: Optional[int]
+    _process_id: Optional[int]
+
+    def __new__(cls) -> "_StructlogState":
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:  # Double-check locking
-                    cls._instance = super().__new__(cls)
-                    cls._instance._initialized = False
-                    cls._instance._log_level = None
-                    cls._instance._process_id = None  # Track which process configured
+                    instance = super().__new__(cls)
+                    instance._initialized = False
+                    instance._log_level = None
+                    instance._process_id = None  # Track which process configured
+                    cls._instance = instance
         return cls._instance
 
     @property
@@ -105,7 +111,7 @@ def configure_structlog(log_level: int) -> None:
             structlog.contextvars.merge_contextvars,
             structlog.processors.add_log_level,
             structlog.processors.StackInfoRenderer(),
-            structlog.dev.set_exc_info,
+            structlog.dev.set_exc_info,  # type: ignore[list-item]
             structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S", utc=False),
             structlog.dev.ConsoleRenderer(
                 colors=True,
@@ -139,7 +145,10 @@ def get_logger(name: str = "app") -> structlog.BoundLogger:
         RuntimeError: If structlog hasn't been configured yet in this process
     """
     if not _state.is_configured:
-        raise RuntimeError("structlog not configured. " "Call configure_structlog() at application startup.")
+        raise RuntimeError(
+            "structlog not configured. "
+            "Call configure_structlog() at application startup."
+        )
     return structlog.get_logger(name)
 
 
@@ -148,4 +157,8 @@ def is_configured() -> bool:
     return _state.is_configured
 
 
-__all__ = ["configure_structlog", "get_logger", "is_configured"]
+__all__ = [
+    "configure_structlog",
+    "get_logger",
+    "is_configured",
+]

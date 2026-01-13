@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black mypy types-requests
+
+      - name: Check formatting (black)
+        run: black --check --diff .
+
+      - name: Lint with ruff
+        run: ruff check --output-format=github .
+
+      - name: Type checking (mypy)
+        run: mypy . --ignore-missing-imports --show-error-codes
+
+      - name: Install project itself
+        run: pip install -e .
+
+  commitlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Important: needed to access full commit history
+
+      - name: Lint commit messages
+        uses: wagoid/commitlint-github-action@v6
+        with:
+          configFile: .commitlint.config.mjs # optional — defaults to conventional if missing
+          failOnWarnings: true

@@ -69,7 +69,9 @@ class AppLogger:
     - Graceful degradation if persistence fails
     """
 
-    def __init__(self, name: str = "app", persist: bool = False, track_timing: bool = False) -> None:
+    def __init__(
+        self, name: str = "app", persist: bool = False, track_timing: bool = False
+    ) -> None:
         """
         Initialize application logger.
 
@@ -83,7 +85,9 @@ class AppLogger:
         self._track_timing = track_timing
         self._logger_instance: Optional[structlog.BoundLogger] = None
         # Fix: Don't set to None if track_timing is True
-        self._timing_stats: Optional[TimingStats] = TimingStats() if track_timing else None
+        self._timing_stats: Optional[TimingStats] = (
+            TimingStats() if track_timing else None
+        )
 
     @property
     def _logger(self) -> structlog.BoundLogger:
@@ -125,7 +129,11 @@ class AppLogger:
         finally:
             # Record timing if enabled
             # Fix: Only call record if timing_stats is not None
-            if self._track_timing and start_time is not None and self._timing_stats is not None:
+            if (
+                self._track_timing
+                and start_time is not None
+                and self._timing_stats is not None
+            ):
                 elapsed = time.perf_counter() - start_time
                 self._timing_stats.record(elapsed)
 
@@ -166,7 +174,9 @@ class AppLogger:
             self._timing_stats.reset()
 
 
-def get_app_logger(name: str = "app", persist: bool = False, track_timing: bool = False) -> AppLogger:
+def get_app_logger(
+    name: str = "app", persist: bool = False, track_timing: bool = False
+) -> AppLogger:
     """
     Get application logger instance.
 

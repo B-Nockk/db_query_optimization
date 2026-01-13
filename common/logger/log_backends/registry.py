@@ -54,7 +54,8 @@ def _initialize_backends() -> None:
             import sys
 
             print(
-                f"Warning: Unknown backend '{backend_name}'. " f"Available: {', '.join(_BACKEND_REGISTRY.keys())}",
+                f"Warning: Unknown backend '{backend_name}'. "
+                f"Available: {', '.join(_BACKEND_REGISTRY.keys())}",
                 file=sys.stderr,
             )
             continue
@@ -67,7 +68,9 @@ def _initialize_backends() -> None:
         except Exception as e:
             import sys
 
-            print(f"Failed to initialize backend '{backend_name}': {e}", file=sys.stderr)
+            print(
+                f"Failed to initialize backend '{backend_name}': {e}", file=sys.stderr
+            )
 
     if not _active_backends:
         # Fallback to file backend if none initialized

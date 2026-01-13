@@ -96,7 +96,9 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
         # Logger is NOT a singleton - it's a bound logger instance
         # Each middleware instance can have its own logger name
-        self.logger = get_app_logger(name=logger_name or __name__, persist=True, track_timing=True)
+        self.logger = get_app_logger(
+            name=logger_name or __name__, persist=True, track_timing=True
+        )
 
     async def dispatch(
         self,
@@ -164,9 +166,19 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         if self.log_details:
             details = RequestDetails(
                 request_id=request_id,
-                client_host=request.client.host if self.log_client_info and request.client else None,
-                user_agent=request.headers.get("user-agent") if self.log_client_info else None,
-                query_params=dict(request.query_params) if self.log_query_params and request.query_params else None,
+                client_host=(
+                    request.client.host
+                    if self.log_client_info and request.client
+                    else None
+                ),
+                user_agent=(
+                    request.headers.get("user-agent") if self.log_client_info else None
+                ),
+                query_params=(
+                    dict(request.query_params)
+                    if self.log_query_params and request.query_params
+                    else None
+                ),
                 path_params=request.path_params if request.path_params else None,
                 content_length=int(response.headers.get("content-length", 0)) or None,
                 time_to_first_byte=time_to_first_byte,  # TODO:: add later when you implement it
@@ -195,7 +207,10 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         if log_entry.is_error:
             self.logger.error("Request failed with server error", **log_data)
         elif log_entry.is_slow:
-            self.logger.warning(f"Slow request detected ({log_entry.metadata.duration_ms}ms)", **log_data)
+            self.logger.warning(
+                f"Slow request detected ({log_entry.metadata.duration_ms}ms)",
+                **log_data,
+            )
         elif log_entry.metadata.status_code >= 400:
             self.logger.warning("Request failed with client error", **log_data)
         else:

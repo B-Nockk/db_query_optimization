@@ -1,0 +1,78 @@
+name: Feature / Enhancement Request
+description: Suggest a new feature, improvement or change
+title: "[FEATURE] "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Great ideas welcome!
+        Try to answer the questions below — it helps a lot when prioritizing & implementing.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: One-line summary
+      placeholder: "Add dark mode support"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / Motivation
+      description: What pain point are you trying to solve? Who benefits?
+      placeholder: |
+        As a night-time user I have to stare at bright white screen...
+        OR
+        Missing this feature makes integration with X very hard...
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution / idea
+      description: Describe how you think it could work (UI, API, behavior...)
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      description: Other ways you thought about solving it?
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria (optional but very helpful)
+      description: Concrete conditions that would make this "done"
+      value: |
+        - [ ] ...
+        - [ ] ...
+        - [ ] UI looks good in both light & dark mode
+        - [ ] Persists user preference
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Screenshots, mockups, links to similar features elsewhere, use cases...
+
+  - type: dropdown
+    id: priority_solo
+    attributes:
+      label: How important is this to you?
+      options:
+        - Must have (blocks important use-case / core value)
+        - Should have (big quality of life improvement)
+        - Nice to have (would be cool)
+        - Low priority / just an idea
+      default: 2
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+
+        **For maintainer use:**
+        - Scope: small / medium / large
+        - Estimated effort: S / M / L / XL
+        - Milestone / Release target:

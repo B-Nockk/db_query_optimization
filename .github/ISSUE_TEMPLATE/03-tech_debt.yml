@@ -1,0 +1,102 @@
+name: Tech Debt / Refactor
+description: Suggest a refactoring, optimization, or technical improvement
+title: "[TECH-DEBT] "
+labels: [tech-debt]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Let's keep the codebase clean and maintainable!
+        Describe the issue and why it matters — this helps prioritize.
+
+  - type: checkboxes
+    id: type
+    attributes:
+      label: What kind of debt is this?
+      options:
+        - label: Code quality (refactoring, cleanup)
+        - label: Architecture / design
+        - label: Performance / optimization
+        - label: Security / vulnerabilities
+        - label: Dependencies (updates, removals)
+        - label: Infrastructure / tooling
+        - label: Testing / coverage
+        - label: Documentation
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Blocking future work
+        - High impact on speed/maintainability
+        - Moderate impact
+        - Nice to have / low priority
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's the problem?
+      description: Describe the current state and why it's debt (e.g., how it slows you down, risks, or got here)
+      placeholder: "This module is messy from quick fixes during v1 launch → hard to add new features without bugs"
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: On development speed, reliability, performance, or users?
+      placeholder: "Slows down iteration by 20%; increases bug risk in production"
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed fix / refactor
+      description: High-level approach (e.g., steps, patterns to use)
+      placeholder: "Break into smaller functions; add types; update to latest lib version"
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered (optional)
+      description: Other ways you thought about it? Pros/cons?
+
+  - type: textarea
+    id: effort
+    attributes:
+      label: Estimated effort
+      description: Rough size (hours/days, or S/M/L)
+      placeholder: "2-3 hours; can do in one sitting"
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks (optional)
+      description: Breaking changes? How to mitigate?
+      placeholder: "Low risk — isolated module; test with existing unit tests"
+
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Success criteria
+      description: How will you know it's fixed? (e.g., metrics before/after)
+      placeholder: |
+        - Tests pass
+        - Code complexity score drops 30%
+        - No regressions in key flows
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Links to code, docs, related issues, or references
+      placeholder: "See file X.py; related to #12"
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+
+        **For tracking (maintainer use):**
+        - Status: triage → planned → done
+        - Related PR:
+        - Metrics before/after:

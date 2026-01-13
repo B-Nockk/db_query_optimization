@@ -17,18 +17,22 @@ class _ConfigState:
     """
 
     _instance: Optional["_ConfigState"] = None
+    _config: Optional[AppConfig]
 
-    def __new__(cls):
+    def __new__(cls) -> "_ConfigState":
         if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._config = None
+            instance = super().__new__(cls)
+            instance._config = None
+            cls._instance = instance
         return cls._instance
 
     @property
     def config(self) -> AppConfig:
         """Get application configuration."""
         if not self._config:
-            raise RuntimeError("Configuration not initialized. Call initialize_config() at startup.")
+            raise RuntimeError(
+                "Configuration not initialized. Call initialize_config() at startup."
+            )
         return self._config
 
     def set_config(self, config: AppConfig) -> None:
@@ -74,7 +78,10 @@ def initialize_config() -> None:
             msg = error["msg"]
             errors.append(f"{field}: {msg}")
 
-        raise ConfigurationError(f"Configuration validation failed:\n" + "\n".join(f"  - {e}" for e in errors)) from e
+        raise ConfigurationError(
+            f"Configuration validation failed:\n"
+            + "\n".join(f"  - {e}" for e in errors)
+        ) from e
 
 
 def get_config() -> AppConfig:

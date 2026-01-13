@@ -83,7 +83,9 @@ class FileBackend(LogBackend):
     def _get_filename(self, log_date: date) -> str:
         """Get the filename for a given date."""
         week_start, week_end, week_number = get_week_date_range(log_date)
-        return f"wk{week_number:02d}_{week_start.isoformat()}--{week_end.isoformat()}.json"
+        return (
+            f"wk{week_number:02d}_{week_start.isoformat()}--{week_end.isoformat()}.json"
+        )
 
     def get_metrics(self) -> Dict[str, Any]:
         """Get file backend metrics."""
