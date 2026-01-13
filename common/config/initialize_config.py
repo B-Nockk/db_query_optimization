@@ -28,7 +28,9 @@ class _ConfigState:
     def config(self) -> AppConfig:
         """Get application configuration."""
         if not self._config:
-            raise RuntimeError("Configuration not initialized. Call initialize_config() at startup.")
+            raise RuntimeError(
+                "Configuration not initialized. Call initialize_config() at startup."
+            )
         return self._config
 
     def set_config(self, config: AppConfig) -> None:
@@ -74,7 +76,10 @@ def initialize_config() -> None:
             msg = error["msg"]
             errors.append(f"{field}: {msg}")
 
-        raise ConfigurationError(f"Configuration validation failed:\n" + "\n".join(f"  - {e}" for e in errors)) from e
+        raise ConfigurationError(
+            f"Configuration validation failed:\n"
+            + "\n".join(f"  - {e}" for e in errors)
+        ) from e
 
 
 def get_config() -> AppConfig:

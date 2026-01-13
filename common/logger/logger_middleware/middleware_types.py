@@ -15,7 +15,9 @@ class RequestMetadata(BaseModel):
     method: str = Field(..., description="HTTP method (GET, POST, etc.)")
     path: str = Field(..., description="Request path without query params")
     status_code: int = Field(..., ge=100, le=599, description="HTTP status code")
-    duration_ms: float = Field(..., ge=0, description="Request duration in milliseconds")
+    duration_ms: float = Field(
+        ..., ge=0, description="Request duration in milliseconds"
+    )
 
     model_config = {"frozen": True}
 
@@ -41,7 +43,9 @@ class RequestDetails(BaseModel):
     request_id: Optional[str] = Field(None, description="Unique request ID")
 
     # Response info
-    content_length: Optional[int] = Field(None, ge=0, description="Response size in bytes")
+    content_length: Optional[int] = Field(
+        None, ge=0, description="Response size in bytes"
+    )
 
     # Timing breakdown (for advanced profiling)
     time_to_first_byte: Optional[float] = Field(None, ge=0, description="TTFB in ms")

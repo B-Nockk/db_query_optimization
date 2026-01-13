@@ -118,7 +118,10 @@ class LogPersistenceHandler:
                     except Exception as e:
                         import sys
 
-                        print(f"Backend '{backend.name}' write failed: {e}", file=sys.stderr)
+                        print(
+                            f"Backend '{backend.name}' write failed: {e}",
+                            file=sys.stderr,
+                        )
 
             self._total_logs += len(batch)
 
@@ -154,14 +157,18 @@ class LogPersistenceHandler:
 
     def get_metrics(self) -> Dict[str, Any]:
         """Get performance metrics for monitoring."""
-        avg_write_time = self._total_write_time / self._total_logs if self._total_logs > 0 else 0
+        avg_write_time = (
+            self._total_write_time / self._total_logs if self._total_logs > 0 else 0
+        )
 
         return {
             "total_logs": self._total_logs,
             "failed_logs": self._failed_logs,
             "queue_size": self._queue.qsize(),
             "avg_write_time_ms": avg_write_time * 1000,
-            "worker_alive": (self._worker_thread.is_alive() if self._worker_thread else False),
+            "worker_alive": (
+                self._worker_thread.is_alive() if self._worker_thread else False
+            ),
         }
 
     def shutdown(self, timeout: float = 5.0) -> None:

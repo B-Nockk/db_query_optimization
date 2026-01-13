@@ -14,7 +14,9 @@ from common.config import get_env
 
 # Module-level defaults
 week_start, week_end, week_number = get_week_date_range()
-_DEFAULT_LOG_FILE_NAME = f"wk{week_number:02d}_{week_start.isoformat()}--{week_end.isoformat()}.json"
+_DEFAULT_LOG_FILE_NAME = (
+    f"wk{week_number:02d}_{week_start.isoformat()}--{week_end.isoformat()}.json"
+)
 _DEFAULT_LOGS_FOLDER_PATH = get_project_root() / "logs"
 
 

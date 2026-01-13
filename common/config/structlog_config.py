@@ -139,7 +139,10 @@ def get_logger(name: str = "app") -> structlog.BoundLogger:
         RuntimeError: If structlog hasn't been configured yet in this process
     """
     if not _state.is_configured:
-        raise RuntimeError("structlog not configured. " "Call configure_structlog() at application startup.")
+        raise RuntimeError(
+            "structlog not configured. "
+            "Call configure_structlog() at application startup."
+        )
     return structlog.get_logger(name)
 
 
