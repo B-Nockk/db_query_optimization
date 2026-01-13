@@ -17,11 +17,13 @@ class _ConfigState:
     """
 
     _instance: Optional["_ConfigState"] = None
+    _config: Optional[AppConfig]
 
-    def __new__(cls):
+    def __new__(cls) -> "_ConfigState":
         if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._config = None
+            instance = super().__new__(cls)
+            instance._config = None
+            cls._instance = instance
         return cls._instance
 
     @property
