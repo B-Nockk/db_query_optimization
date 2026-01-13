@@ -22,7 +22,6 @@ class RequestMetadata(BaseModel):
     model_config = {"frozen": True}
 
     @computed_field
-    @property
     def duration_seconds(self) -> float:
         """Duration in seconds for easier reading."""
         return round(self.duration_ms / 1000, 3)
@@ -67,13 +66,11 @@ class RequestLogEntry(BaseModel):
     model_config = {"frozen": True}
 
     @computed_field
-    @property
     def is_slow(self) -> bool:
         """Flag slow requests (>1 second)."""
         return self.metadata.duration_ms > 1000
 
     @computed_field
-    @property
     def is_error(self) -> bool:
         """Flag error responses (5xx)."""
         return self.metadata.status_code >= 500

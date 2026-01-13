@@ -28,6 +28,8 @@ class LogPersistenceHandler:
     _instance: Optional["LogPersistenceHandler"] = None
     _lock = threading.Lock()
 
+    _initialized: bool
+
     def __new__(cls) -> "LogPersistenceHandler":
         """Singleton pattern to ensure single queue/thread."""
         if cls._instance is None:
