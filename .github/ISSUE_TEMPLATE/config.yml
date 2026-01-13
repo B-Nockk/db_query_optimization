@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 General Question / Discussion
+    url: https://github.com/yourusername/yourrepo/discussions
+    about: Ask questions, share ideas, get help
+
+  - name: 🙌 Show appreciation / sponsor
+    url: https://github.com/sponsors/yourusername
+    about: If you want to support the project financially

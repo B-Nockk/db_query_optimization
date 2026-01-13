@@ -1,0 +1,100 @@
+name: Bug Report
+description: Report unexpected behavior, crash, or issue
+title: "[BUG] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve the project!
+        Fill in as many fields as you can — the more details, the faster it gets fixed.
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: How severe is this?
+      options:
+        - Critical (breaks core functionality / data loss / security)
+        - High (major feature unusable)
+        - Medium (annoying but has workaround)
+        - Low (cosmetic / edge case)
+      default: 2
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Short & clear description
+      placeholder: "When I click X → Y crashes / shows wrong data"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_actual
+    attributes:
+      label: Expected vs Actual
+      value: |
+        **Expected:**
+
+        **Actual:**
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      value: |
+        1.
+        2.
+        3.
+        4.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often does it happen?
+      options:
+        - Always
+        - Almost always
+        - Sometimes
+        - Once / rare
+        - Couldn't reproduce again
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Helps a lot for reproducibility
+      value: |
+        **OS / Device:**
+        **Browser (if web) / Client version:**
+        **App version / Commit:**
+        **Environment:** Local / Staging / Production
+        **Other relevant info:** (database, python/node version, etc)
+
+  - type: textarea
+    id: logs_error
+    attributes:
+      label: Error messages / Logs / Screenshots
+      description: Stack trace, console output, screenshots, request IDs, etc.
+      render: shell
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Anything else that might help? (related issues, recent changes, theories...)
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+
+        **For maintainer use only:**
+
+        - Root cause:
+        - Status: triage → in-progress → done
+        - Related PRs:
