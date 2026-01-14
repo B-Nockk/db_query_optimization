@@ -1,0 +1,44 @@
+# user addons
+*.sample*
+.github
+.env.*
+docs
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Distribution / packaging
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Logs
+*.log
+logs
+
+
+# Unit test / coverage reports
+.coverage
+htmlcov/
+.pytest_cache/
+
+# IDE / editor settings
+.vscode/
+.idea/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker-specific
+Dockerfile*
+docker-compose*.yml
