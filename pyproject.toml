@@ -1,2 +1,6 @@
+[tool.setuptools]
+py-modules = ["main"]
+packages = ["common", "app"]
+
 [tool.ruff.lint]
 ignore = ["F403", "F541"]
