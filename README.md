@@ -9,6 +9,7 @@
 - [Quick Start](#quick-start)
   - [Prerequisites](#prerequisites)
   - [Setup](#setup)
+  - [Running with docker + nginx](#running-with-docker--nginx)
   - [Run Optimizations](#run-optimizations)
 - [Optimization Strategies](#optimization-strategies)
   - [B-Tree Indexing](#1-b-tree-indexing)
@@ -78,39 +79,67 @@ Multiple optimization strategies, measured and compared with real metrics.
 git clone <repo-url>
 cd db_query_optimization
 
-# Start services
-docker-compose up -d
-
 # Install dependencies
 pip install -r requirements.txt
+
+# rename .env.dev to .env
+mv .env.dev .env
+
+# Start services
+python main.py
 
 # Seed database (takes ~2-3 minutes)
 python scripts/seed_db.py
 
 # Verify setup
-curl http://localhost:3000/health
+curl http://localhost:8000/health
+```
+
+### Running with docker + nginx
+
+```bash
+# Clone the repository
+git clone <repo-url>
+cd db_query_optimization
+
+# rename .env.dev to .env
+mv .env.dev .env
+
+# Build docker image
+docker compose build
+
+# start service (watch mode)
+docker compose up
+
+# start service (detach mode)
+docker compose up -d
+
+# Verify setup
+# Note when using docker, all curl operations shouldn't include the port
+curl http://localhost/health
+
 ```
 
 ### Run Optimizations
 
 ```bash
 # Baseline: Full table scan
-curl http://localhost:3000/users/scan?email=user5000000@example.com
+curl http://localhost:8000/users/scan?email=user5000000@example.com
 
 # Optimized: B-Tree index
-curl http://localhost:3000/users/indexed?email=user5000000@example.com
+curl http://localhost:8000/users/indexed?email=user5000000@example.com
 
 # Optimized: Partial index (active users only)
-curl http://localhost:3000/users/partial?email=user5000000@example.com
+curl http://localhost:8000/users/partial?email=user5000000@example.com
 
 # Optimized: Composite index (email + status)
-curl http://localhost:3000/users/composite?email=user5000000@example.com&status=active
+curl http://localhost:8000/users/composite?email=user5000000@example.com&status=active
 
 # Super fast: Redis cache
-curl http://localhost:3000/users/cached?email=user5000000@example.com
+curl http://localhost:8000/users/cached?email=user5000000@example.com
 
 # Anti-pattern: N+1 queries
-curl http://localhost:3000/users/terrible?limit=10
+curl http://localhost:8000/users/terrible?limit=10
 ```
 
 ## Optimization Strategies
@@ -277,9 +306,9 @@ async def get_users_terrible(limit: int = 10):
 ### Load Test Results
 
 ```bash
-# Run with: wrk -t4 -c100 -d30s http://localhost:3000/users/cached
+# Run with: wrk -t4 -c100 -d30s http://localhost:8000/users/cached
 
-Running 30s test @ http://localhost:3000/users/cached
+Running 30s test @ http://localhost:8000/users/cached
   4 threads and 100 connections
 
 Requests/sec:   523.47
@@ -356,7 +385,7 @@ Tests cover:
 pip install locust
 
 # Run load test
-locust -f tests/load/locustfile.py --host=http://localhost:3000
+locust -f tests/load/locustfile.py --host=http://localhost:8000
 ```
 
 Simulates:
