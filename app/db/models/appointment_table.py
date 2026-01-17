@@ -62,4 +62,4 @@ class Appointment(DbBaseModel):
     doctor: Mapped["Doctor"] = relationship("Doctor", back_populates="appointments")
 
 
-__all__ = ["Appointment"]
+__all__ = ["Appointment", "AppointmentStatus"]
