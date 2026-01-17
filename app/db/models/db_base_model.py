@@ -1,4 +1,4 @@
-# public/app/db/db_base_model.py
+# public/app/db/models/db_base_model.py
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import DateTime
 from datetime import datetime, timezone
