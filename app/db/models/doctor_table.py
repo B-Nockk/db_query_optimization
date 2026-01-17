@@ -1,4 +1,4 @@
-# public/app/db/doctor_table.py
+# public/app/db/models/doctor_table.py
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from sqlalchemy import String, Text

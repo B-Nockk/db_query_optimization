@@ -1,4 +1,4 @@
-# public/app/db/patient_table.py
+# public/app/db/models/patient_table.py
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from sqlalchemy import String, Date

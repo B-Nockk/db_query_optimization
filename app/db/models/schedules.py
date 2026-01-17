@@ -1,4 +1,4 @@
-# public/app/db/schedules.py
+# public/app/db/models/schedules.py
 from enum import Enum
 from sqlalchemy import String, DateTime, ForeignKey, Enum as sqlalchemy_enum
 from sqlalchemy.orm import Mapped, mapped_column
