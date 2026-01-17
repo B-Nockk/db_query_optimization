@@ -9,10 +9,13 @@ from .db_base_model import DbBaseModel
 
 
 # 1. Define a standard Python Enum
-class AppointmentStatus(Enum):
-    SCHEDULED = "scheduled"
-    COMPLETED = "completed"
-    CANCELED = "canceled"
+class AppointmentStatus(str, Enum):
+    SCHEDULED = "scheduled"  # Booked, but not yet time
+    CHECKED_IN = "checked_in"  # Patient arrived at clinic
+    IN_PROGRESS = "in_progress"  # Patient is with the doctor (clinical encounter)
+    COMPLETED = "completed"  # Appointment finished
+    CANCELLED = "cancelled"  # Patient/Doctor cancelled
+    NO_SHOW = "no_show"  # Appointment time passed without arrival
 
 
 if TYPE_CHECKING:
@@ -59,4 +62,4 @@ class Appointment(DbBaseModel):
     doctor: Mapped["Doctor"] = relationship("Doctor", back_populates="appointments")
 
 
-__all__ = ["Appointment"]
+__all__ = ["Appointment", "AppointmentStatus"]
