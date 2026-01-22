@@ -17,3 +17,8 @@ ignore = ["F403", "F541"]
 # Ensure it uses double quotes like Black
 quote-style = "double"
 indent-style = "space"
+
+[[tool.mypy.overrides]]
+# Alternatively, keep checking the files but ignore missing library stubs
+module = "alembic.*"
+ignore_missing_imports = true
