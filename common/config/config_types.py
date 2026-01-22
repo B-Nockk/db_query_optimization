@@ -1,5 +1,6 @@
 # public/common/config/config_types.py
 """Configuration type definitions."""
+
 from enum import Enum
 import logging
 

@@ -3,6 +3,7 @@
 Complete application configuration with validation.
 Database configuration with SSL support and future-proofing.
 """
+
 from typing import Optional, Any
 from pydantic import BaseModel, Field, field_validator, model_validator, SecretStr
 from .config_types import EnvLogLevel, DbDriver, SslMode, Environment

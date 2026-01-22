@@ -3,6 +3,7 @@
 Structlog configuration module.
 Must be configured once at application startup via configure_structlog().
 """
+
 import sys
 import os
 import threading

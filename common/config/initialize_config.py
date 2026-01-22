@@ -4,6 +4,7 @@ Configuration initialization module.
 
 Handles the complete application configuration lifecycle.
 """
+
 from typing import Optional, List
 from pydantic import ValidationError
 from .app_config import AppConfig, load_app_config
