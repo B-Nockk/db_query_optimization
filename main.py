@@ -8,6 +8,8 @@ from common.logger import get_app_logger
 from common.logger.logger_middleware import RequestLoggingMiddleware
 from common.api_error import ConfigurationError
 from typing import Any
+from app.db import DbManager
+from contextlib import asynccontextmanager
 
 load_dotenv()
 try:
@@ -29,10 +31,39 @@ logger = get_app_logger(
 app_title = config.app_title
 app_version = config.app_version
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    _db_config = config.database
+    if not _db_config:
+        raise RuntimeError("Database configuration required")
+
+    logger.info(f"{_db_config}")
+
+    db_manager = DbManager.from_config(
+        _db_config,
+    )
+    await db_manager.verify_connection()
+
+    # Ensure migrations are up-to-date (fail fast if not)
+    try:
+        await db_manager.verify_migrations_current()
+        logger.info("✓ All migrations applied")
+    except RuntimeError as e:
+        logger.error(f"❌ Migration check failed: {e}")
+        logger.error("Run 'python scripts/migrate.py' or 'alembic upgrade head'")
+        raise
+
+    yield
+    logger.info("shutting down")
+    await db_manager.dispose()
+
+
 app = FastAPI(
     title=app_title,
     version=app_version,
     description=f"Running in {config.environment} environment",
+    lifespan=lifespan,
 )
 app.add_middleware(RequestLoggingMiddleware)
 
