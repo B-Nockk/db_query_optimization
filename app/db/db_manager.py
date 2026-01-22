@@ -1,3 +1,4 @@
+# app/db/db_manager.py
 """
 Database manager focused on connection management and session handling.
 Schema migrations are handled separately via Alembic CLI.
