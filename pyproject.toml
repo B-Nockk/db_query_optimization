@@ -18,6 +18,11 @@ ignore = ["F403", "F541"]
 quote-style = "double"
 indent-style = "space"
 
+[tool.mypy]
+# python_version = "3.11"
+# This tells MyPy to completely ignore these directories
+exclude = ["alembic/versions/.*", "alembic/env.py"]
+
 [[tool.mypy.overrides]]
 # Alternatively, keep checking the files but ignore missing library stubs
 module = "alembic.*"
