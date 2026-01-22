@@ -18,6 +18,9 @@ ignore = ["F403", "F541"]
 quote-style = "double"
 indent-style = "space"
 
+[tool.mypy]
+exclude = ["alembic/"]
+
 [[tool.mypy.overrides]]
 module = ["alembic", "alembic.*"]
-disable_error_code = ["attr-defined"]
+ignore_missing_imports = true
