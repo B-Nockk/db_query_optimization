@@ -85,6 +85,13 @@ pip install -r requirements.txt
 # rename .env.dev to .env
 mv .env.dev .env
 
+# Create initial migration from your models
+alembic revision --autogenerate -m "initial schema"
+
+# Review the generated migration in alembic/versions/
+# Apply it
+alembic upgrade head
+
 # Start services
 python main.py
 
