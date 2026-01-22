@@ -12,3 +12,15 @@ packages = ["common", "app"]
 
 [tool.ruff.lint]
 ignore = ["F403", "F541"]
+
+[tool.ruff.format]
+# Ensure it uses double quotes like Black
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+exclude = ["alembic/"]
+
+[[tool.mypy.overrides]]
+module = ["alembic", "alembic.*"]
+ignore_missing_imports = true

@@ -5,3 +5,4 @@ structlog==25.5.0
 rich==14.2.0
 uvicorn==0.38.0
 SQLAlchemy==2.0.45
+asyncpg==0.31.0

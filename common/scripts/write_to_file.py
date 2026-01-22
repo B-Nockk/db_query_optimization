@@ -5,6 +5,7 @@ Logging utilities for writing structured log files with automatic week-based nam
 This module provides functionality to write log entries to files with automatic
 directory creation and week-based file naming conventions.
 """
+
 from pathlib import Path
 from typing import Any
 from .get_date_range import get_week_date_range

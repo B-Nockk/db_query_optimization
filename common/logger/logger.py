@@ -16,6 +16,7 @@ Usage:
     # Check performance
     print(logger.get_timing_stats())
 """
+
 import time
 from datetime import datetime
 from typing import Any, Dict, Optional

@@ -1,5 +1,6 @@
 # public/common/config/config_types.py
 """Configuration type definitions."""
+
 from enum import Enum
 import logging
 
@@ -76,8 +77,37 @@ class Environment(str, Enum):
         """Check if production environment."""
         return self == Environment.PRODUCTION
 
+    @property
+    def is_staging(self) -> bool:
+        """Check if staging environment."""
+        return self == Environment.STAGING
+
+    @property
+    def is_development(self) -> bool:
+        """Check if development environment."""
+        return self == Environment.DEVELOPMENT
+
     def __str__(self) -> str:
         return self.value
+
+
+class DbDriver(str, Enum):
+    """Supported database drivers."""
+
+    ASYNCPG = "asyncpg"
+    PSYCOPG = "psycopg"
+    AIOSQLITE = "aiosqlite"
+
+
+class SslMode(str, Enum):
+    """PostgreSQL SSL modes."""
+
+    DISABLE = "disable"
+    ALLOW = "allow"
+    PREFER = "prefer"
+    REQUIRE = "require"
+    VERIFY_CA = "verify-ca"
+    VERIFY_FULL = "verify-full"
 
 
 __all__ = [
@@ -86,4 +116,6 @@ __all__ = [
     "Environment",
     "EnvLogBackends",
     "EnvMetricBackend",
+    "DbDriver",
+    "SslMode",
 ]
