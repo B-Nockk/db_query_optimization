@@ -13,7 +13,7 @@ Usage Example:
     app.add_middleware(
         RequestLoggingMiddleware,
         log_details=True,  # Log extended details
-        slow_threshold_ms=500,  # Flag requests >500ms
+        slow_query_threshold=500,  # Flag requests >500ms
         log_query_params=False,  # Don't log query params (may contain PII)
     )
 
@@ -26,11 +26,18 @@ from typing import Callable, Awaitable, Optional
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
+from .request_timer import RequestTimer
+from common import request_timer_context_var
 import time
 import uuid
 
 from ..logger import get_app_logger
-from .middleware_types import RequestMetadata, RequestDetails, RequestLogEntry
+from .middleware_types import (
+    RequestMetadata,
+    RequestDetails,
+    RequestLogEntry,
+    PerformanceBreakdown,
+)
 
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
@@ -38,7 +45,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     Middleware for structured request logging.
 
     **Why a class?**
-    - Configuration: Each instance can have different settings (log_details, slow_threshold)
+    - Configuration: Each instance can have different settings (log_details, slow_query_threshold)
     - State management: Can track metrics, rate limits, sampling
     - Extensibility: Subclass for custom behavior (e.g., different logging per route)
     - Dependency injection: Easier to mock/test
@@ -57,7 +64,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         app.add_middleware(
             RequestLoggingMiddleware,
             log_details=True,
-            slow_threshold_ms=500
+            slow_query_threshold=500
         )
 
         # Custom subclass for specific routes
@@ -71,8 +78,9 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         self,
         app: ASGIApp,
         *,
+        expose_performance_headers: Optional[bool] = False,
         log_details: bool = True,
-        slow_threshold_ms: float = 1000.0,
+        slow_query_threshold: float = 1000.0,
         log_query_params: bool = True,
         log_client_info: bool = True,
         logger_name: Optional[str] = None,
@@ -83,16 +91,17 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         Args:
             app: ASGI application
             log_details: Whether to log extended details (client IP, headers, etc.)
-            slow_threshold_ms: Threshold for flagging slow requests
+            slow_query_threshold: Threshold for flagging slow requests
             log_query_params: Whether to include query parameters (may contain PII)
             log_client_info: Whether to log client IP and User-Agent
             logger_name: Custom logger name (defaults to module name)
         """
         super().__init__(app)
         self.log_details = log_details
-        self.slow_threshold_ms = slow_threshold_ms
+        self.slow_query_threshold = slow_query_threshold
         self.log_query_params = log_query_params
         self.log_client_info = log_client_info
+        self.expose_performance_headers = expose_performance_headers
 
         # Logger is NOT a singleton - it's a bound logger instance
         # Each middleware instance can have its own logger name
@@ -115,18 +124,49 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         Returns:
             HTTP response
         """
-        # Generate unique request ID
-        request_id = str(uuid.uuid4())
-        request.state.request_id = request_id
-
-        # Start timing
+        timer = RequestTimer()
+        token = request_timer_context_var.set(timer)
         start_time = time.perf_counter()
 
+        # Extract or Generate unique request ID
+        request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+        request.state.request_id = request_id
+
         # Process request
-        response = await call_next(request)
+        try:
+            with timer.capture("app"):
+                response = await call_next(request)
+        finally:
+            # CAPTURE TIMINGS BEFORE RESETTING TOKEN
+            duration_ms = (time.perf_counter() - start_time) * 1000
+
+            # Extract data from the timer object
+            perf_data = PerformanceBreakdown(
+                total_ms=round(duration_ms, 2),
+                app_logic_ms=round(timer.timings.get("app", 0), 2),
+                db_session_total_ms=round(timer.timings.get("db", 0), 2),
+                sql_execution_total_ms=round(timer.timings.get("sql", 0), 2),
+                query_count=int(timer.timings.get("query_count", 0)),
+            )
+
+            request_timer_context_var.reset(token)
 
         # Calculate duration
         duration_ms = (time.perf_counter() - start_time) * 1000
+
+        # Build the header
+        timing_header = timer.format_server_timing()
+        timing_header += f", total;dur={duration_ms:.2f}"
+
+        # Add request ID to response headers for tracing
+        response.headers["X-Request-ID"] = request_id
+
+        # Timing Header if toggle is ON or Router enables it
+        expose = self.expose_performance_headers or getattr(
+            request.state, "expose_perf", False
+        )
+        if expose:
+            response.headers["Server-Timing"] = timing_header
 
         # Build log entry
         log_entry = self._build_log_entry(
@@ -134,14 +174,11 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             response=response,
             duration_ms=duration_ms,
             request_id=request_id,
+            perf_data=perf_data,
         )
 
         # Log with appropriate level
         self._log_request(log_entry)
-
-        # Add request ID to response headers for tracing
-        response.headers["X-Request-ID"] = request_id
-
         return response
 
     def _build_log_entry(
@@ -150,6 +187,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         response: Response,
         duration_ms: float,
         request_id: str,
+        perf_data: Optional[PerformanceBreakdown] = None,
         time_to_first_byte: Optional[float] = None,
     ) -> RequestLogEntry:
         """Build structured log entry from request/response."""
@@ -187,6 +225,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         return RequestLogEntry(
             metadata=metadata,
             details=details,
+            performance=perf_data,
         )
 
     def _log_request(
@@ -204,7 +243,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         # Convert to dict for structured logging
         log_data = log_entry.model_dump(mode="json", exclude_none=True)
 
-        if log_entry.is_error:
+        if log_entry.is_error:  # type: ignore[truthy-function]
             self.logger.error("Request failed with server error", **log_data)
         elif log_entry.is_slow:
             self.logger.warning(
@@ -246,7 +285,28 @@ async def simple_request_logger(
     return response
 
 
+# Toggle Dependency for on the fly usage
+async def enable_perf_headers(request: Request):
+    """
+    Dependency to flag that this request should expose performance headers.
+    Requires RequestLoggingMiddleware to be active.
+
+    Usage Examples:
+        - Router level - All endpoints attached to router
+            router = APIRouter(
+                prefix="/users",
+                tags=["router"],
+                dependencies=[Depends(enable_perf_headers)]
+            )
+
+        - Specific Route level
+            @router.get("/user/{id}", dependencies=[Depends(enable_perf_headers)])
+    """
+    request.state.expose_perf = True
+
+
 __all__ = [
     "RequestLoggingMiddleware",
     "simple_request_logger",
+    "enable_perf_headers",
 ]

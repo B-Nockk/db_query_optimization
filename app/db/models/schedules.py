@@ -1,9 +1,13 @@
 # public/app/db/models/schedules.py
 from enum import Enum
 from sqlalchemy import String, DateTime, ForeignKey, Enum as sqlalchemy_enum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from .db_base_model import DbBaseModel
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .doctor_table import Doctor
 
 
 class DayOfWeek(str, Enum):
@@ -41,3 +45,11 @@ class Schedule(DbBaseModel):
         DateTime(timezone=True),
         nullable=False,
     )
+
+    doctor: Mapped["Doctor"] = relationship("Doctor", back_populates="schedules")
+
+
+__all__ = [
+    "Schedule",
+    "DayOfWeek",
+]

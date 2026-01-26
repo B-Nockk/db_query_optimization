@@ -1,7 +1,7 @@
 # public/app/db/schemas/patient_schema.py
 from pydantic import BaseModel, Field, ConfigDict
-from datetime import date, datetime
-from typing import Optional
+from datetime import date, datetime, timedelta
+from typing import Optional, List
 from uuid import UUID
 
 
@@ -14,7 +14,30 @@ class PatientBase(BaseModel):
 
 
 class PatientCreate(PatientBase):
-    pass  # Everything in Base is required for creation
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    @classmethod
+    def seed_records(
+        cls,
+        template: dict,
+        records: int,
+        start_index: int = 0,
+        date_interval: int = 0,
+        gender_cycle: list[str] = ["Male", "Female"],
+    ) -> List["PatientCreate"]:
+        result = []
+        base_date = template.get("date_of_birth", date.today())
+        genders = gender_cycle
+        for i in range(start_index, start_index + records):
+            record = cls(
+                name=f"{template['name']}_{i}",
+                date_of_birth=base_date - timedelta(days=(i * date_interval)),
+                gender=genders[i % len(genders)],
+                contact_info=f"{template['contact_info']} #{i}",
+                medical_history=template.get("medical_history"),
+            )
+            result.append(record)
+        return result
 
 
 class PatientUpdate(BaseModel):

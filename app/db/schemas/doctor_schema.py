@@ -1,7 +1,7 @@
 # public/app/db/schemas/doctor_schema.py
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 
@@ -12,7 +12,24 @@ class DoctorBase(BaseModel):
 
 
 class DoctorCreate(DoctorBase):
-    pass
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    @classmethod
+    def seed_records(
+        cls,
+        template: dict,
+        records: int,
+        start_index: int = 0,
+    ) -> List["DoctorCreate"]:
+        result = []
+        for i in range(start_index, start_index + records):
+            record = cls(
+                name=f"{template['name']}_{i}",
+                specialty=template.get("specialty"),
+                contact_info=f"{template['contact_info']} #{i}",
+            )
+            result.append(record)
+        return result
 
 
 class DoctorResponse(DoctorBase):
