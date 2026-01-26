@@ -78,7 +78,6 @@ app.add_middleware(
 
 @app.exception_handler(AppError)
 async def app_error_handler(request: Request, exc: AppError):
-
     logger.error(
         f"Domain Error: {exc.code}",
         path=request.url.path,
