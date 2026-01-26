@@ -1,7 +1,6 @@
 # public/app/scripts/seed_db.py
 import csv
 from pathlib import Path
-from typing import Type
 from pydantic import BaseModel
 from datetime import date
 
