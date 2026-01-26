@@ -111,7 +111,7 @@ async def seed_db(
         model_cls = MODEL_MAP[table]
 
         # Generate Pydantic schema records
-        schema_records = schema_cls.seed_records(template, records, start_index)
+        schema_records = schema_cls.seed_records(template, records, start_index)  # type: ignore[attr-defined]
         all_records_by_table[table] = schema_records
 
         # Optionally export to CSV

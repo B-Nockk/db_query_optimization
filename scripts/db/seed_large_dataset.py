@@ -1,11 +1,8 @@
 # public/scripts/seed_large_dataset.py
 from app.db import DbManager
-from common.config import get_config
-from dotenv import load_dotenv
 from .seed_db import seed_db
 from typing import Any
 from .data_template import DEFAULT_DATA_TEMPLATE
-import asyncio
 
 
 async def seed_large_dataset(

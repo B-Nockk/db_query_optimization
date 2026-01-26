@@ -1,15 +1,16 @@
-# public/main.py
-from fastapi import FastAPI, HTTPException
+# main.py
+from fastapi import FastAPI, HTTPException, Request
 from datetime import datetime
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
-from common.config import initialize_config, get_config, is_configured
+from common.config import initialize_config, get_config, is_configured, Environment
 from common.logger import get_app_logger
 from common.logger.logger_middleware import RequestLoggingMiddleware
-from common.api_error import ConfigurationError
+from common.api_error import ConfigurationError, AppError
 from typing import Any
 from app.db import DbManager
 from contextlib import asynccontextmanager
+from fastapi.responses import JSONResponse
 
 load_dotenv()
 try:
@@ -54,6 +55,9 @@ async def lifespan(app: FastAPI):
         logger.error("Run 'python scripts/migrate.py' or 'alembic upgrade head'")
         raise
 
+    # Add to state
+    app.state.db_manager = db_manager
+
     yield
     logger.info("shutting down")
     await db_manager.dispose()
@@ -65,7 +69,31 @@ app = FastAPI(
     description=f"Running in {config.environment} environment",
     lifespan=lifespan,
 )
-app.add_middleware(RequestLoggingMiddleware)
+app.add_middleware(
+    RequestLoggingMiddleware,
+    expose_performance_headers=config.environment.lower()
+    != Environment.PRODUCTION.value.lower(),
+)
+
+
+@app.exception_handler(AppError)
+async def app_error_handler(request: Request, exc: AppError):
+
+    logger.error(
+        f"Domain Error: {exc.code}",
+        path=request.url.path,
+        error_code=exc.code,
+        message=exc.message,
+    )
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": exc.code,
+            "message": exc.message,
+            "timestamp": datetime.now().isoformat(),
+        },
+    )
 
 
 class HealthCheckResponse(BaseModel):
@@ -139,13 +167,4 @@ async def metrics() -> dict[str, Any]:
     }
 
 
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8080,
-        reload=config.environment != "production",
-        log_level=config.logging.level_value.lower(),
-    )
+__all__ = ["app", "config"]
