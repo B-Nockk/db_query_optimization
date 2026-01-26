@@ -16,11 +16,18 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession,
     AsyncEngine,
 )
-from sqlalchemy import text
+from sqlalchemy import text, event
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, Any, Optional, Union
 from pathlib import Path
-from common import DatabaseConfig, logger
+from common import (
+    DatabaseConfig,
+    logger,
+    request_timer_context_var,
+    AppLogger,
+    require_env,
+)
+import time
 
 
 class DbManager:
@@ -54,7 +61,7 @@ class DbManager:
         self,
         url: str,
         *,
-        pool_size: int = 10,
+        pool_size: int = 1,
         max_overflow: int = 20,
         pool_timeout: int = 30,
         pool_recycle: int = 3600,
@@ -62,6 +69,7 @@ class DbManager:
         echo: bool = False,
         echo_pool: bool = False,
         connect_args: Optional[dict[str, Any]] = None,
+        logger: AppLogger = logger,
     ):
         """
         Initialize database manager.
@@ -78,6 +86,7 @@ class DbManager:
             connect_args: Driver-specific connection arguments (SSL, etc.)
         """
         self._validate_url(url)
+        self.logger = logger
 
         # Store config for introspection
         self._config: dict[str, Union[str, int]] = {
@@ -109,7 +118,57 @@ class DbManager:
         # Track if we've verified connection
         self._verified = False
 
-        logger.info(
+        # Toggle for performance tracking (Default True)
+        self.track_performance = True
+        self.slow_query_threshold_ms: float = float(require_env("SLOW_QUERY_THRESHOLD"))
+
+        if self.track_performance:
+
+            @event.listens_for(self.engine.sync_engine, "before_cursor_execute")
+            def before_cursor_execute(
+                conn,
+                cursor,
+                statement,
+                parameters,
+                context,
+                execmany,
+            ):
+                context._query_start_time = time.perf_counter()
+
+                # Increment query counter
+                timer = request_timer_context_var.get()
+                if timer:
+                    timer.timings["query_count"] = (
+                        timer.timings.get("query_count", 0) + 1
+                    )
+
+            @event.listens_for(self.engine.sync_engine, "after_cursor_execute")
+            def after_cursor_execute(
+                conn,
+                cursor,
+                statement,
+                parameters,
+                context,
+                execmany,
+            ):
+                duration_ms = (time.perf_counter() - context._query_start_time) * 1000
+
+                # 1. Update the global RequestTimer
+                timer = request_timer_context_var.get()
+                if timer:
+                    timer.timings["sql"] = timer.timings.get("sql", 0) + duration_ms
+
+                # 2. Log Slow Queries with full context
+                if duration_ms > self.slow_query_threshold_ms:
+                    self.logger.warning(
+                        "🐢 Slow SQL Query Detected",
+                        duration_ms=round(duration_ms, 2),
+                        query=statement[:500],  # Truncate for log readability
+                        params=parameters,
+                        execmany=execmany,
+                    )
+
+        self.logger.info(
             f"DbManager initialized: pool_size={pool_size}, "
             f"max_overflow={max_overflow}, pre_ping={pool_pre_ping}"
         )
@@ -228,9 +287,9 @@ class DbManager:
             async with self.engine.connect() as conn:
                 await conn.execute(text("SELECT 1"))
             self._verified = True
-            logger.info("✓ Database connection verified")
+            self.logger.info("✓ Database connection verified")
         except Exception as e:
-            logger.error(f"❌ Database connection failed: {e}")
+            self.logger.error(f"❌ Database connection failed: {e}")
             raise ConnectionError(f"Failed to connect to database: {e}") from e
 
     async def verify_migrations_current(self) -> bool:
@@ -267,11 +326,11 @@ class DbManager:
                 )
                 current_version = result.scalar()
 
-                logger.info(f"Current migration version: {current_version}")
+                self.logger.info(f"Current migration version: {current_version}")
                 return True  # If we got here, migrations have been applied
 
         except Exception as e:
-            logger.error(f"Migration check failed: {e}")
+            self.logger.error(f"Migration check failed: {e}")
             raise
 
     @asynccontextmanager
@@ -291,14 +350,22 @@ class DbManager:
             Exception: Re-raises any exception after rollback
         """
         session = self.session_maker()
+        timer = request_timer_context_var.get()  # Try to get the timer from context
+
+        start = time.perf_counter()
         try:
             yield session
             await session.commit()
         except Exception as e:
             await session.rollback()
-            logger.error(f"Session error, rolled back: {e}")
+            self.logger.error(f"Session error, rolled back: {e}")
             raise
         finally:
+            if timer:
+                # Add the duration to a 'db_total' category
+                duration = (time.perf_counter() - start) * 1000
+                timer.timings["db"] = timer.timings.get("db", 0) + duration
+
             await session.close()
 
     async def get_raw_session(self) -> AsyncSession:
@@ -378,7 +445,6 @@ class DbManager:
                 "response_time_ms": 5.2
             }
         """
-        import time
 
         start = time.perf_counter()
 
@@ -499,7 +565,7 @@ class DbManager:
         Call this on application shutdown.
         """
         await self.engine.dispose()
-        logger.info("✓ Database connections disposed")
+        self.logger.info("✓ Database connections disposed")
 
     def get_config_snapshot(self) -> dict[str, Any]:
         """Get current configuration (for monitoring/debugging)."""

@@ -23,7 +23,9 @@ class DatabaseConfig(BaseModel):
     host: str = Field(..., min_length=1)
     port: int = Field(..., gt=0, le=65535)
     name: str = Field(..., min_length=1, description="Database name")
-
+    slow_query_threshold: float = Field(
+        ..., description="Threshold for a query to be considered slow"
+    )
     # Authentication (keep separate from URL for security)
     username: Optional[str] = Field(default=None, min_length=1)
     password: Optional[SecretStr] = Field(default=None)  # Pydantic hides this in logs
@@ -195,6 +197,7 @@ def load_database_config(environment: Environment) -> Optional[DatabaseConfig]:
     pool_timeout_str = require_env("DB_POOL_TIMEOUT")
     pool_recycle_str = require_env("DB_POOL_RECYCLE")
     driver_str = require_env("DB_DRIVER")
+    slow_query_threshold = float(require_env("SLOW_QUERY_THRESHOLD"))
 
     # Validate driver enum
     try:
@@ -269,6 +272,7 @@ def load_database_config(environment: Environment) -> Optional[DatabaseConfig]:
         ssl_key_path=ssl_key_path,
         ssl_ca_path=ssl_ca_path,
         driver=driver,
+        slow_query_threshold=slow_query_threshold,
     )
 
 
