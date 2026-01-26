@@ -67,7 +67,7 @@ async def insert_from_csv(db_manager: DbManager, table: str, filename: str):
 
             schema_obj = schema_cls(**row)
             # Convert Pydantic schema to ORM model
-            orm_obj = model_cls(**schema_obj.model_dump())
+            orm_obj = model_cls(**schema_obj.model_dump())  # type: ignore[attr-defined]
             objs.append(orm_obj)
 
     async with db_manager.session() as session:
